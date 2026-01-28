@@ -256,6 +256,7 @@ export const Step3: React.FC<StepProps> = ({ data, updateData, next, back, onGen
 
   const handleAiSuggest = async () => {
     setIsGenerating(true);
+    // Local helper now returns a static suggestion after a short delay
     const suggestion = await generateEndorsementDetails(data.reason, data.policyReference);
     updateData({ details: suggestion });
     setIsGenerating(false);

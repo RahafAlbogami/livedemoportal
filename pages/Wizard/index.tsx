@@ -60,52 +60,30 @@ const Wizard: React.FC = () => {
   };
 
   const handleGenerateQuotation = async () => {
+    // Show loading view
     updateData({ view: 'loading', submissionStatus: 'none' });
-    
-    try {
-      // Call Gemini for the actual content with timeout protection
-      const details = await Promise.race([
-        generateDetailedQuotation(wizardData),
-        new Promise<string>((resolve) => 
-          setTimeout(() => resolve('Request is taking longer than expected. Please try again.'), 35000)
-        )
-      ]);
-      
-      // Minimum 2-second delay for UX, but don't wait if API already took longer
-      const minDelay = 2000;
-      const startTime = Date.now();
-      
-      const policyId = wizardData.selectedPolicy?.id;
-      let status: WizardState['submissionStatus'] = 'none';
-      
-      // Scenario 1: Unexpected Error (Policy 5)
-      if (policyId === '5') {
-        status = 'error_gen';
-      } 
-      // Scenario 2: Longer than usual (Policy 6)
-      else if (policyId === '6') {
-        status = 'delayed_gen';
-      }
 
-      const elapsed = Date.now() - startTime;
-      const remainingDelay = Math.max(0, minDelay - elapsed);
+    // Generate a local, fake quotation with a short delay (no external API)
+    const details = await generateDetailedQuotation(wizardData);
 
-      setTimeout(() => {
-        updateData({ 
-          view: 'quotation', 
-          quotationDetails: details,
-          submissionStatus: status
-        });
-      }, remainingDelay);
-    } catch (error) {
-      console.error('Error generating quotation:', error);
-      // Show quotation view with error message even if API fails
-      updateData({ 
-        view: 'quotation', 
-        quotationDetails: 'Error generating quotation. Please try again or contact support.',
-        submissionStatus: 'error_gen'
-      });
+    // Keep scenarios based on policy for your demo behaviour
+    const policyId = wizardData.selectedPolicy?.id;
+    let status: WizardState['submissionStatus'] = 'none';
+
+    if (policyId === '5') {
+      status = 'error_gen';
+    } else if (policyId === '6') {
+      status = 'delayed_gen';
     }
+
+    // Small fixed delay so the spinner is visible but never \"forever\"
+    setTimeout(() => {
+      updateData({
+        view: 'quotation',
+        quotationDetails: details,
+        submissionStatus: status
+      });
+    }, 1200);
   };
 
   const next = () => {
