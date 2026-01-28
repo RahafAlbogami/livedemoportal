@@ -60,11 +60,14 @@ const Wizard: React.FC = () => {
   };
 
   const handleGenerateQuotation = async () => {
-    // Show loading view
+    // Show loading view immediately
     updateData({ view: 'loading', submissionStatus: 'none' });
 
-    // Generate a local, fake quotation with a short delay (no external API)
-    const details = await generateDetailedQuotation(wizardData);
+    // Run fake quotation generation and a fixed 2s delay in parallel
+    const [details] = await Promise.all([
+      generateDetailedQuotation(wizardData),
+      new Promise<void>((resolve) => setTimeout(resolve, 2000)),
+    ]);
 
     // Keep scenarios based on policy for your demo behaviour
     const policyId = wizardData.selectedPolicy?.id;
@@ -76,14 +79,12 @@ const Wizard: React.FC = () => {
       status = 'delayed_gen';
     }
 
-    // Small fixed delay so the spinner is visible but never \"forever\"
-    setTimeout(() => {
-      updateData({
-        view: 'quotation',
-        quotationDetails: details,
-        submissionStatus: status
-      });
-    }, 1200);
+    // After ~2s, always move to the quotation view
+    updateData({
+      view: 'quotation',
+      quotationDetails: details,
+      submissionStatus: status
+    });
   };
 
   const next = () => {

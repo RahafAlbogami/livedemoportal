@@ -4,20 +4,12 @@ import { WizardState } from "../types";
 // This file no longer calls any external APIs (Google Gemini or otherwise).
 // Everything is simulated locally with short delays so the UI never hangs.
 
-const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
-
 export const generateEndorsementDetails = async (reason: string, policyRef: string) => {
-  // Small artificial delay so the user sees a quick \"thinking\" state
-  await sleep(800);
-
   return `Endorsement requested for policy ${policyRef} to address: ${reason}.
 This change keeps coverage aligned with the current risk profile and underwriting guidelines.`;
 };
 
 export const generateDetailedQuotation = async (data: WizardState) => {
-  // Short delay to drive the loading screen animation
-  await sleep(1500);
-
   const propertyCount = data.properties.length;
   const policyRef = data.policyReference || "Q-REF-000000";
 
