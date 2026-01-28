@@ -705,7 +705,7 @@ export const Step3: React.FC<StepProps> = ({ data, updateData, next, back, onGen
   );
 };
 
-export const LoadingView: React.FC = () => {
+export const LoadingView: React.FC<{ onCancel?: () => void }> = ({ onCancel }) => {
   const [msgIndex, setMsgIndex] = useState(0);
   const messages = [
     "Analyzing property risk factors...",
@@ -737,6 +737,14 @@ export const LoadingView: React.FC = () => {
       <div className="w-64 h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden mt-4">
         <div className="h-full bg-primary animate-[loading_5s_linear_forwards]"></div>
       </div>
+      {onCancel && (
+        <button
+          onClick={onCancel}
+          className="mt-4 px-6 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+        >
+          Cancel
+        </button>
+      )}
       <style>{`
         @keyframes loading {
           0% { width: 0%; }

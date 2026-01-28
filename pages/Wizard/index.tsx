@@ -62,11 +62,19 @@ const Wizard: React.FC = () => {
   const handleGenerateQuotation = async () => {
     updateData({ view: 'loading', submissionStatus: 'none' });
     
-    // Call Gemini for the actual content
-    const details = await generateDetailedQuotation(wizardData);
-    
-    // Explicit 5-second delay for test scenario simulation
-    setTimeout(() => {
+    try {
+      // Call Gemini for the actual content with timeout protection
+      const details = await Promise.race([
+        generateDetailedQuotation(wizardData),
+        new Promise<string>((resolve) => 
+          setTimeout(() => resolve('Request is taking longer than expected. Please try again.'), 35000)
+        )
+      ]);
+      
+      // Minimum 2-second delay for UX, but don't wait if API already took longer
+      const minDelay = 2000;
+      const startTime = Date.now();
+      
       const policyId = wizardData.selectedPolicy?.id;
       let status: WizardState['submissionStatus'] = 'none';
       
@@ -79,12 +87,25 @@ const Wizard: React.FC = () => {
         status = 'delayed_gen';
       }
 
+      const elapsed = Date.now() - startTime;
+      const remainingDelay = Math.max(0, minDelay - elapsed);
+
+      setTimeout(() => {
+        updateData({ 
+          view: 'quotation', 
+          quotationDetails: details,
+          submissionStatus: status
+        });
+      }, remainingDelay);
+    } catch (error) {
+      console.error('Error generating quotation:', error);
+      // Show quotation view with error message even if API fails
       updateData({ 
         view: 'quotation', 
-        quotationDetails: details,
-        submissionStatus: status
+        quotationDetails: 'Error generating quotation. Please try again or contact support.',
+        submissionStatus: 'error_gen'
       });
-    }, 5000);
+    }
   };
 
   const next = () => {
@@ -103,9 +124,16 @@ const Wizard: React.FC = () => {
     updateData({ step: Math.max(1, prevStep) });
   };
 
+  const handleCancelLoading = () => {
+    updateData({ 
+      view: 'form',
+      submissionStatus: 'none'
+    });
+  };
+
   const renderStep = () => {
     if (wizardData.step === 4) {
-      if (wizardData.view === 'loading') return <LoadingView />;
+      if (wizardData.view === 'loading') return <LoadingView onCancel={handleCancelLoading} />;
       if (wizardData.view === 'quotation') return <QuotationView data={wizardData} updateData={updateData} />;
       return (
         <Step3
