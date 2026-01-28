@@ -1,0 +1,5 @@
+{
+  "name": "Insurance Admin Portal",
+  "description": "A comprehensive policy administration system for managing insurance requests, endorsements, and renewals with an integrated AI-powered wizard.",
+  "requestFramePermissions": []
+}
